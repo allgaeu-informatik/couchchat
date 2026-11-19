@@ -120,7 +120,7 @@ und `HOST_USER_AUTH=false`:
   (bzw. `/`); keine Route liefert mehr eine eigene Login-Seite.
 - `HOST_USER_AUTH=false` muss gesetzt bleiben: `true` würde **jeden** Teilnehmer zur Anmeldung zwingen.
 - `HOST_USERS` ist ein JSON-Array (Passwort 1 bis 36 Zeichen, `allowed_rooms` `["*"]` = alle Räume):
-  `HOST_USERS='[{"username":"anna","password":"...","displayname":"Anna","allowed_rooms":["*"]}]'`.
+  `HOST_USERS=[{"username":"anna","password":"...","displayname":"Anna","allowed_rooms":["*"]}]`. Werte stehen ohne umschliessende Anführungszeichen, weil `docker run --env-file` Quotes wörtlich übernimmt.
   Der Container startet nicht, solange `REPLACE_ME` darin steht (Start-Guard).
 - Das ist eine **Zwischenlösung**: Die Anmeldung über eine zentrale Benutzerverwaltung (eigener OIDC-Dienst) ist
   geplant und ersetzt `HOST_USERS`. Bis dahin Zugangsdaten pro Kunde in `couchchat.env` pflegen und mit
@@ -241,7 +241,7 @@ Beim Neustart zeigt der Server verbundenen Clients kurz einen Hinweis „CouchCh
 5. **Geheimnisse** in `couchchat.env` setzen: `JWT_KEY`, `API_KEY_SECRET` (je `openssl rand -hex 32`),
    `TURN_SERVER_USERNAME`, `TURN_SERVER_CREDENTIAL` sowie `HOST_USERS` (Host-Logins, siehe "Zugang / Host-Login"). Der Container startet nicht, solange `REPLACE_ME` darin steht.
    TURN-Zugangsdaten sind im Browser sichtbar, daher eigene Werte nur für TURN. `TRUST_PROXY=true` bleibt in
-   Produktion gesetzt. `CORS_ORIGIN` ist ein JSON-String (`'"https://couchchat.de"'`), nicht ändern.
+   Produktion gesetzt. `CORS_ORIGIN` ist ein JSON-Array (`["https://couchchat.de"]`), nicht ändern; Werte stehen ohne umschliessende Anführungszeichen, weil `docker run --env-file` Quotes wörtlich übernimmt.
 6. **coturn**: `cp coturn/turnserver.conf.example coturn/turnserver.conf`, IP, Zugangsdaten (identisch zu
    `couchchat.env`) und Zertifikatspfade eintragen, im Compose-Mount das Zertifikatsverzeichnis einkommentieren.
    Firewall: 3478 UDP/TCP, 5349 TCP, Relay-Range 49152-49300 UDP. Start mit
