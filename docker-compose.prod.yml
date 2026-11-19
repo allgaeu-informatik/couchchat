@@ -9,6 +9,11 @@ services:
     # volumes:
     #   - ./backgrounds-extra:/src/backgrounds-extra:ro
 
+  # Admin-Panel: nur ueber Caddy (admin.couchchat.de), kein Port-Mapping. Image fest pinnen (COUCHCHAT_ADMIN_IMAGE).
+  admin:
+    networks:
+      - caddy
+
   # Optional: eigener TURN-Server (docker compose --profile turn up -d coturn).
   # Alternativ coturn auf einem separaten Host betreiben (empfohlen, siehe README).
   coturn:

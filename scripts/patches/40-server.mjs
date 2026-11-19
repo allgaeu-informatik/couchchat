@@ -181,6 +181,15 @@ export default async function (ctx) {
             '/activeRooms gated by SHOW_ACTIVE_ROOMS'
         );
 
+        // GET /api/v1/activeRooms: public only with SHOW_ACTIVE_ROOMS=true (upstream). Additionally usable with a valid
+        // API key (header "authorization" == API_KEY_SECRET) while SHOW_ACTIVE_ROOMS=false, so the admin panel can read the
+        // room list (room id + peer count, no names) over the internal network. Caddy keeps blocking /api/* publicly.
+        R(
+            '    if (!hostCfg.showActiveRooms) {\n        return res.status(403).json({',
+            '    const apiKeyOk = new ServerApi(req.headers.host, req.headers.authorization, api_key_secret).isAuthorized();\n    if (!hostCfg.showActiveRooms && !apiKeyOk) {\n        return res.status(403).json({',
+            "/api/v1/activeRooms: also with a valid API key"
+        );
+
         // /hostIdentity: HOST_USERS logins do not lock the name (typed name wins; displayname only fills an empty name in join)
         R(
             'return res.json({ locked: true, name: String(checkXSS(hostUser.displayname)).slice(0, 254) });',

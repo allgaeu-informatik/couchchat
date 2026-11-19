@@ -12,3 +12,11 @@ services:
     # Raumhintergruende sind im Image enthalten (wie in Produktion). Zusaetzliche Bilder zum Testen:
     # volumes:
     #   - ./backgrounds-extra:/src/backgrounds-extra:ro
+
+  admin:
+    image: couchchat-admin:local
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    ports:
+      - "${LOCAL_ADMIN_PORT:-3021}:3000"

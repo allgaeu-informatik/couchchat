@@ -9,3 +9,10 @@ node_modules/
 # Raumhintergruende: branding/backgrounds/*.webp sind eigenes Markenmaterial und versioniert (NOTICE.md, Punkt 2).
 # Nur die Originale (Quelldateien der KI-Generierung, grosse PNGs) bleiben lokal.
 branding/backgrounds/_originals/
+
+# Admin-Panel: Laufzeitdaten und Build (hostdata/ enthaelt Passwort-Hashes, admin-data/ die Datenbank)
+hostdata/
+admin-data/
+admin.env
+admin/.next
+admin/node_modules

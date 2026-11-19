@@ -33,6 +33,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Unit tests of the host-users loader (plain node:test, no dependencies; needs Node >= 20, the ubuntu-24.04 runner ships it).
+      - name: Test host users loader
+        run: |
+          set -euo pipefail
+          node --version
+          node -e "process.exit(Number(process.versions.node.split('.')[0]) >= 20 ? 0 : 1)" || { echo "::error::Node >= 20 required"; exit 1; }
+          node --test scripts/test/host-users.test.mjs
+
       - name: Read upstream.env
         id: up
         run: |

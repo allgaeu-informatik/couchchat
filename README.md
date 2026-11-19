@@ -41,17 +41,19 @@ Trefferzahl** hat: Ändert Upstream die Stelle, bricht der Build laut ab (Exit 1
 | `scripts/init-local-env.sh` | legt `.env` und `couchchat.env` für lokale Entwicklung an (Zufalls-Geheimnisse, zufälliges Passwort für den lokalen Host-Login `demo`) |
 | `branding/` | Eigene Quell-Assets (Bilder, Raumhintergründe, CSS, Footer, Views, Übersetzungen, `seo.js`, Fonts) |
 | `.gitattributes` | `* text=auto eol=lf`, Bilder und Fonts als binär |
-| `docker-compose.yml` | Service `couchchat` mit `${COUCHCHAT_IMAGE}` (read-only Dateisystem, keine Mounts; optionales `backgrounds-extra` nur im Prod-Override) |
+| `docker-compose.yml` | Services `couchchat` und `admin` mit `${COUCHCHAT_IMAGE}` (read-only Dateisystem, keine Mounts; optionales `backgrounds-extra` nur im Prod-Override) |
 | `docker-compose.local.yml` | lokal: baut aus dem Dockerfile (`couchchat:local`), Port `${LOCAL_PORT:-3020}:3000` |
 | `docker-compose.prod.yml` | Produktion: Netzwerk `${CADDY_NETWORK}`, optional coturn (Profil `turn`) |
 | `.env.example` / `.env` | Compose-Ebene: `COMPOSE_FILE`, `COUCHCHAT_IMAGE`, Port, Caddy-Netzwerk |
 | `couchchat.env.example` | App-Konfiguration **Produktion** (Platzhalter `REPLACE_ME`) |
 | `couchchat.env.local.example` | App-Konfiguration **lokal** (localhost, TURN aus) |
-| `Caddyfile.example` | Site-Block mit gesperrten Pfaden und Content-Security-Policy |
+| `Caddyfile.example` | Site-Block mit gesperrten Pfaden und Content-Security-Policy; Block für `admin.couchchat.de` |
+| `admin/` | Admin-Panel (Next.js, Benutzerverwaltung, schreibt `hostdata/host-users.json`), siehe "Admin-Panel / Benutzerverwaltung" |
+| `admin.env.example` / `admin.env.local.example` | Konfiguration des Admin-Panels (Produktion / lokal) |
 | `coturn/turnserver.conf.example` | TURN-Server-Konfiguration |
-| `.github/workflows/`, `.github/dependabot.yml` | `build.yml`, `upstream-check.yml`, `mirror-fork.yml` (optional, aus); Dependabot für Actions und den Node-Basisimage-Digest |
+| `.github/workflows/`, `.github/dependabot.yml` | `build.yml`, `admin.yml`, `upstream-check.yml`, `mirror-fork.yml` (optional, aus); Dependabot für Actions und den Node-Basisimage-Digest |
 
-`.env`, `couchchat.env`, `coturn/turnserver.conf` und `build/` sind in `.gitignore`.
+`.env`, `couchchat.env`, `admin.env`, `hostdata/`, `admin-data/`, `coturn/turnserver.conf` und `build/` sind in `.gitignore`.
 
 ## upstream.env
 
@@ -148,16 +150,61 @@ das Extra-Verzeichnis. Änderungen wirken nach Neuladen der Seite ohne Neustart.
 `scripts/prepare-backgrounds.sh <zielverzeichnis> <bild>[=<name>] ...` (WebP, max. 1920x1080, sichere Dateinamen).
 Details in `branding/backgrounds/README.md`.
 
+## Admin-Panel / Benutzerverwaltung
+
+Die Host-Logins von CouchChat werden nicht mehr von Hand in `couchchat.env` gepflegt, sondern im Admin-Panel
+(`admin/`, Next.js, eigenes Image `ghcr.io/allgaeu-informatik/couchchat-admin`). Das Panel ist die **einzige Quelle**
+der Benutzer: Wer dort aktiv angelegt ist, ist in CouchChat ein Host.
+
+- **Rollen**: `admin` verwaltet alle Benutzer (anlegen, ändern, sperren, löschen, Passwort setzen) und sieht das Audit-Log
+  (30 Tage Aufbewahrung). Ein normaler `user` kann nur sich selbst bearbeiten: Benutzername, Name und Passwort.
+- **Anmeldung**: echter Login mit Session-Cookie. Erreichbar unter `https://admin.couchchat.de` (lokal
+  `http://localhost:3021`). Basic-Auth oder Netzbeschränkung in Caddy ist optional (Hinweis im `Caddyfile.example`).
+- **Sync nach CouchChat**: Nach jeder Änderung und beim Start schreibt das Panel atomar `host-users.json` in das
+  gemeinsame Verzeichnis `./hostdata` (nur aktive Benutzer, Passwörter als scrypt-Hash, nie im Klartext). CouchChat
+  mountet **das Verzeichnis** schreibgeschützt nach `/hostdata` und liest `HOST_USERS_FILE=/hostdata/host-users.json`.
+  Es wird bewusst das Verzeichnis gemountet, nicht die Datei: Ein Einzeldatei-Mount behielte nach dem atomaren Austausch
+  (Rename) den alten Inode. Änderungen wirken ohne Neustart von CouchChat.
+- **Nutzungsstatistik** (nur Administratoren): Reiter „Übersicht“ mit Aktiven Räumen, Teilnehmern, Spitze 24 Std., Teilnehmer-Minuten,
+  Verlauf (24 Std./7 Tage/30 Tage), offenen Räumen und Systemkarte. Es werden **nur Anzahlen und Raumnamen** erfasst, nie Teilnehmernamen.
+  Das Panel fragt dafür jede Minute die interne CouchChat-API ab (`COUCHCHAT_INTERNAL_URL=http://couchchat:3000`, `COUCHCHAT_API_KEY` = `API_KEY_SECRET`
+  aus `couchchat.env`, beides in `admin.env`). Caddy sperrt `/api/*` weiterhin öffentlich, `API_DISABLED=["token","meetings"]` bleibt gesetzt
+  (`/meetings` würde Namen liefern). Die Raumliste kommt aus `/api/v1/activeRooms`: Der Patch `40-server` erlaubt den Endpunkt zusätzlich mit gültigem
+  API-Key, auch wenn `SHOW_ACTIVE_ROOMS=false` bleibt (die öffentliche Seite `/activeRooms` bleibt aus). Details: `admin/README.md`, Abschnitt „Nutzungsstatistik“.
+- **Rückfall**: Ist `HOST_USERS_FILE` nicht gesetzt, gilt weiterhin `HOST_USERS` aus `couchchat.env` (Klartext-Passwort,
+  1 bis 36 Zeichen). Ist die Datei gesetzt, hat sie Vorrang. Werte stehen in beiden Fällen ohne umschließende Anführungszeichen.
+- **Regeln**: Benutzername `[a-z0-9._-]`, 3 bis 32 Zeichen; Name 1 bis 64 Zeichen; Passwort 8 bis 128 Zeichen mit
+  Klein- und Großbuchstabe, Ziffer und Sonderzeichen.
+- **Bootstrap**: Beim ersten Start legt das Panel den ersten Administrator aus `BOOTSTRAP_ADMIN_USERNAME`,
+  `BOOTSTRAP_ADMIN_NAME` und `BOOTSTRAP_ADMIN_PASSWORD` (`admin.env`) an, solange noch kein Benutzer existiert.
+  Danach diese Werte aus `admin.env` entfernen.
+- **Konfiguration**: `admin.env.example` (Produktion) und `admin.env.local.example` (lokal) nach `admin.env` kopieren,
+  `REPLACE_ME` ersetzen (`SESSION_SECRET`: `openssl rand -hex 32`). `admin.env`, `admin-data/` (Datenbank, Audit-Log)
+  und `hostdata/` (Hashes) sind nicht versioniert.
+- **Lokal starten**: `.env` aus `.env.example` (enthält `COUCHCHAT_ADMIN_IMAGE=couchchat-admin:local`), `couchchat.env`
+  (`scripts/init-local-env.sh`) und `admin.env` anlegen, dann `mkdir -p hostdata admin-data` und
+  `docker compose up -d --build`. Panel: <http://localhost:3021>, CouchChat: <http://localhost:3020>. Das Panel muss
+  `hostdata/` und `admin-data/` beschreiben können (Container-Benutzer uid 1000, lokal ggf. `chmod 777`). `scripts/init-local-env.sh` legt `.env`, `couchchat.env` und `admin.env`
+  an (Zufalls-Geheimnisse, Bootstrap-Admin `admin` mit Passwort in `admin.env`), erstellt die beiden Verzeichnisse und nennt die Panel-URL. Host-Logins für lokale Tests
+  legen Sie im Panel an; `HOST_USERS` in `couchchat.env` wirkt nur, wenn `HOST_USERS_FILE` nicht gesetzt ist.
+- **Produktion**: Verzeichnisse für den Container-Benutzer anlegen: `install -d -o 1000 -g 1000 hostdata admin-data` (sonst kann das Panel nicht schreiben; es meldet das beim Start im Log).
+  DNS `admin.couchchat.de`, Block aus `Caddyfile.example` übernehmen, `COUCHCHAT_ADMIN_IMAGE` in `.env`
+  pinnen (Tag `<git-sha7>` oder Digest), `docker compose pull && docker compose up -d`. CI: `.github/workflows/admin.yml`
+  (Tests, Build, Smoke-Test, Push).
+
 ## CI (GitHub Actions)
 
 Alle Actions sind per vollem Commit-SHA gepinnt (Version im Kommentar). Prüfung der Workflows mit
 `docker run --rm -v "$PWD/.github/workflows:/wf" rhysd/actionlint:latest /wf/build.yml ...`.
 
-- **`build.yml`**: bei Push auf `main`, Pull Requests, Tags `v*` und manuell. Baut das Image (linux/amd64),
+- **`build.yml`**: bei Push auf `main`, Pull Requests, Tags `v*` und manuell. Führt zuerst `node --test scripts/test/host-users.test.mjs` aus (Host-Nutzer-Loader), baut dann das Image (linux/amd64),
   prüft den Start-Guard, startet den Container mit Zufalls-Geheimnissen und führt `scripts/smoke-test.sh` aus.
   Nur auf `main` und Tags wird nach `ghcr.io/allgaeu-informatik/couchchat` gepusht (`GITHUB_TOKEN`,
   `packages: write`). Tags: `<upstream-version>-<git-sha7>` immer, zusätzlich `<upstream-version>` und `latest`
   auf `main`, bei Git-Tags der Tag-Name. arm64: siehe Kommentar im Workflow (QEMU ergänzen).
+- **`admin.yml`**: gleiche Auslöser. Führt `npm ci && npm test` in `admin/` aus, baut das Image `ghcr.io/allgaeu-informatik/couchchat-admin`,
+  startet es mit Dummy-Werten (`COOKIE_SECURE=false`), wartet auf `/api/health` und prüft, dass `host-users.json` geschrieben wurde.
+  Push nur auf `main` und Tags; Tags: `<git-sha7>` immer, `latest` auf `main`, bei Git-Tags der Tag-Name.
 - **`upstream-check.yml`**: montags (und manuell). Vergleicht den Digest von `mirotalk/p2p:latest` mit
   `upstream.env`. Bei Abweichung: Version aus dem neuen Image lesen, Commit bestimmen, `upstream.env` und
   Dockerfile-Default ändern und einen Pull Request öffnen. Der PR-Build zeigt sofort, ob Anker brechen.
@@ -265,7 +312,7 @@ Beim Neustart zeigt der Server verbundenen Clients kurz einen Hinweis „CouchCh
 - `app/src` (Modul `40-server`): Telemetrie dauerhaft aus (`/stats` liefert nur `{"enabled":false}`), `/about` leitet
   auf `https://allgaeu-informatik.de`, Defaults in `config.js` (Marke, Titel, Open Graph, Sprache `de`, nur
   native Übersetzungen), Restart-Banner, Admin-Mail-Texte, Fallbacks im HTML-Injector, API-Doku-Titel,
-  `config.template.js` entfernt.
+  `config.template.js` entfernt; `GET /api/v1/activeRooms` zusätzlich mit gültigem API-Key nutzbar (Admin-Statistik, auch bei `SHOW_ACTIVE_ROOMS=false`).
 - `/src/.env` des Upstream-Images (Entwicklungs-Defaults inklusive öffentlichem TURN-Account und OIDC-Secret) wird
   durch eine leere Datei ersetzt; Konfiguration kommt ausschließlich aus `couchchat.env`.
 - Nicht geändert (intern, nicht sichtbar): JWT-Label, Deny-Liste bekannter Standard-Geheimnisse, Logger-Name, CSS-Klassen

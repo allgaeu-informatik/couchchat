@@ -49,3 +49,23 @@ couchchat.de {
 
 	reverse_proxy couchchat:3000
 }
+
+# Admin-Panel (Benutzerverwaltung). Eigene Subdomain, damit Cookies und CSP vom Videochat getrennt bleiben.
+# Die Content-Security-Policy und weitere App-Header (X-Frame-Options, Cache-Control) setzt das Panel selbst;
+# Caddy setzt hier bewusst nur HSTS, Referrer-Policy und nosniff, damit sich nichts doppelt oder widerspricht.
+# Optional nur aus dem Bueronetz: Block "@fremd not remote_ip ..." unten einkommentieren (CIDR anpassen).
+admin.couchchat.de {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Referrer-Policy "same-origin"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# @fremd not remote_ip 203.0.113.0/24
+	# respond @fremd 403
+
+	reverse_proxy couchchat-admin:3000
+}

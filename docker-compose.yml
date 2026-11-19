@@ -14,6 +14,10 @@ services:
       - couchchat.env
     expose:
       - "3000"
+    # Host-Logins kommen aus dem Admin-Panel: das Verzeichnis (nicht die Einzeldatei, sonst bleibt nach dem atomaren
+    # Austausch der alte Inode gemountet) schreibgeschuetzt einhaengen; HOST_USERS_FILE steht in couchchat.env.
+    volumes:
+      - ./hostdata:/hostdata:ro
     read_only: true
     tmpfs:
       - /tmp
@@ -27,6 +31,51 @@ services:
         - node
         - -e
         - "require('http').get('http://127.0.0.1:3000/robots.txt',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Admin-Panel (Benutzerverwaltung): einzige Quelle der Host-Logins. Schreibt nach jeder Aenderung
+  # hostdata/host-users.json, das CouchChat liest. Konfiguration nur ueber admin.env.
+  admin:
+    image: ${COUCHCHAT_ADMIN_IMAGE:?COUCHCHAT_ADMIN_IMAGE in .env setzen}
+    container_name: couchchat-admin
+    hostname: couchchat-admin
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    env_file:
+      - admin.env
+    # Version/Image der CouchChat-Instanz fuer die Systemkarte der Statistik (gleicher Wert wie fuer den couchchat-Dienst).
+    # Die Statistik erreicht CouchChat ueber das Compose-/Caddy-Netz (COUCHCHAT_INTERNAL_URL=http://couchchat:3000 in admin.env).
+    environment:
+      COUCHCHAT_IMAGE: ${COUCHCHAT_IMAGE:-}
+    expose:
+      - "3000"
+    # Beide Verzeichnisse muessen dem Container-Benutzer (uid 1000) gehoeren: install -d -o 1000 -g 1000 hostdata admin-data
+    # (das Panel loggt beim Start einen Fehler, wenn sie nicht beschreibbar sind).
+    volumes:
+      - ./admin-data:/data
+      - ./hostdata:/hostdata
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
       interval: 30s
       timeout: 5s
       retries: 3

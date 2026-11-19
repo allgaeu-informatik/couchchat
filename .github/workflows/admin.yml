@@ -1,0 +1,133 @@
+# Test, build and publish the CouchChat admin panel image (./admin).
+#   - pull_request / push / dispatch: npm ci + npm test, build image, start it, smoke test (health + host-users.json)
+#   - push to main and tags v*: additionally push to ghcr.io/allgaeu-informatik/couchchat-admin
+# The pushed image is exactly the one that was tested (single build, loaded locally, re-tagged and pushed).
+# Image tags: <short sha> (always), latest (main only), v* git tag name (tags).
+# No paths filter: the workflow is cheap, and a filter would leave a required check "missing" on unrelated PRs.
+name: admin
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admin-${{ github.ref }}
+  # Only superseded pull request runs are cancelled; a run that may push an image is never cancelled half way.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE_NAME: ghcr.io/allgaeu-informatik/couchchat-admin
+
+jobs:
+  admin:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Unit tests
+        working-directory: admin
+        run: |
+          set -euo pipefail
+          npm ci
+          npm test
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build image (once, loaded locally; this exact image is tested and pushed)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: admin
+          load: true
+          tags: couchchat-admin:ci
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
+
+      # Dummy values only; COOKIE_SECURE=false because the smoke test talks plain http.
+      - name: Start container with test configuration
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/admin-data" "$RUNNER_TEMP/hostdata"
+          # The container user is not the runner user: make the mounts writable for it.
+          chmod 777 "$RUNNER_TEMP/admin-data" "$RUNNER_TEMP/hostdata"
+          docker run -d --name couchchat-admin-ci -p 3021:3000 \
+            -e NODE_ENV=production \
+            -e APP_ORIGIN=http://localhost:3021 \
+            -e COOKIE_SECURE=false \
+            -e SESSION_SECRET=ci-session-secret-ci-session-secret-0123456789 \
+            -e BOOTSTRAP_ADMIN_USERNAME=ciadmin \
+            -e BOOTSTRAP_ADMIN_NAME=CI-Admin \
+            -e BOOTSTRAP_ADMIN_PASSWORD='Ci!Test-Passw0rd' \
+            -e DATA_DIR=/data -e HOSTDATA_DIR=/hostdata \
+            -v "$RUNNER_TEMP/admin-data:/data" -v "$RUNNER_TEMP/hostdata:/hostdata" \
+            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true couchchat-admin:ci
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3021/api/health || true)
+            if [ "$code" = "200" ]; then echo "up after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          docker logs couchchat-admin-ci
+          echo "::error::admin container did not become healthy"; exit 1
+
+      - name: Smoke test (host-users.json is written)
+        run: |
+          set -euo pipefail
+          f="$RUNNER_TEMP/hostdata/host-users.json"
+          for _ in $(seq 1 10); do [ -s "$f" ] && break; sleep 1; done
+          [ -s "$f" ] || { echo "::error::host-users.json missing or empty"; docker logs couchchat-admin-ci; exit 1; }
+          # shellcheck disable=SC2016
+          node -e '
+            const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+            if (j.version !== 1 || !Array.isArray(j.users)) throw new Error("unexpected format");
+            for (const u of j.users) {
+              if (!/^scrypt\$16384\$8\$1\$/.test(u.password_hash)) throw new Error("unexpected hash format");
+              if ("password" in u) throw new Error("plaintext password exported");
+            }
+            if (!j.users.some((u) => u.username === "ciadmin")) throw new Error("bootstrap admin missing in host-users.json");
+            console.log("host-users.json ok, users: " + j.users.length);
+          ' "$f"
+
+      - name: Smoke test (bootstrap admin can log in)
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3021/api/auth/login -H 'Content-Type: application/json' -H 'Origin: http://localhost:3021' -d '{"username":"ciadmin","password":"Ci!Test-Passw0rd"}')
+          [ "$code" = "200" ] || { echo "::error::login with bootstrap credentials failed (HTTP $code)"; docker logs couchchat-admin-ci; exit 1; }
+          echo "login ok"
+
+      - name: Container logs
+        if: always()
+        run: docker logs couchchat-admin-ci 2>&1 | tail -n 80 || true
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Re-tag and push the image that passed the tests; nothing is rebuilt.
+      - name: Push tested image
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        run: |
+          set -euo pipefail
+          tags=("${IMAGE_NAME}:${GITHUB_SHA::7}")
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            tags+=("${IMAGE_NAME}:latest")
+          else
+            tags+=("${IMAGE_NAME}:${GITHUB_REF_NAME}")
+          fi
+          for t in "${tags[@]}"; do
+            docker tag couchchat-admin:ci "$t"
+            docker push "$t"
+          done

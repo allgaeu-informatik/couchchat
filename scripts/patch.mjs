@@ -23,7 +23,7 @@ import { checkBuild, checkApp, APP_CHECK_ENFORCED } from './check-branding.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
 const PATCH_DIR = path.join(HERE, 'patches');
-export const MODULES = ['10-assets', '20-views', '30-texts', '40-server', '50-vendor', '60-backgrounds', '90-cleanup'];
+export const MODULES = ['10-assets', '20-views', '30-texts', '40-server', '45-host-users', '50-vendor', '60-backgrounds', '90-cleanup'];
 
 const args = process.argv.slice(2);
 const opt = (name, def) => {

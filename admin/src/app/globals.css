@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* Self-hosted Inter (latin, SIL OFL 1.1), same files as CouchChat (see public/fonts/LICENSE-Inter.txt). */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/inter-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/inter-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/inter-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/inter-latin-700-normal.woff2") format("woff2"); }
+
+/* Tokens taken from branding/css/couchchat.css: petrol #006e96 / #0a86ad / #56b8de, gold #e5a407, navy #16222f / #233749 */
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-bg: #16222f;
+  --color-surface: #233749;
+  --color-raised: #2b4358;
+  --color-ink: #1b2a3d;
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-fg: #f4f8fb;
+  --color-muted: #a9b8c6;
+  --color-primary: #006e96;
+  --color-primary-hover: #0a86ad;
+  --color-brand: #56b8de;
+  --color-gold: #e5a407;
+  --color-lime: #9bbf2f;
+  --color-danger: #f0707a;
+  --color-danger-bg: #7a2530;
+  --radius-card: 14px;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-fg);
+  background-color: var(--color-bg);
+  background-image: linear-gradient(160deg, #16222f 0%, #1b2a3d 55%, #0c4c66 140%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary-hover);
+  outline-offset: 2px;
+}
+
+dialog::backdrop {
+  background: rgb(10 18 26 / 0.7);
+  backdrop-filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

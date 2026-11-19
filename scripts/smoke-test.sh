@@ -95,6 +95,10 @@ if [ "$MODE" != "http" ]; then
   if grep -qiE '#315bd6|#1a84f5' "$TMP/image/public/js/swal.js" "$TMP/image/public/js/utils.js"; then fail "Upstream-Blau in swal.js/utils.js"; else ok "swal.js/utils.js im Markenton"; fi
   # Upstream-.env (oeffentlicher TURN-Account, OIDC-Secret) darf nicht mehr enthalten sein
   if grep -qE 'TURN_SERVER_CREDENTIAL|SESSION_SECRET|metered' "$TMP/image/dot-env"; then fail "/src/.env enthaelt noch Upstream-Defaults"; else ok "/src/.env ist entschaerft"; fi
+  # Host-User aus Datei: die Hashes duerfen nicht in hostCfg (wird von Upstream beim Start als 'Server config' geloggt)
+  if grep -qF 'hostUsersFile' "$TMP/image/app/src/server.js" \
+     && grep -qF '? []' "$TMP/image/app/src/server.js" \
+     && ! grep -qE 'hostCfg\.users[[:space:]]*=[^=]' "$TMP/image/app/src/server.js"; then ok "server.js: Host-User-Hashes landen nicht in hostCfg"; else fail "server.js: hostCfg.users koennte Passwort-Hashes enthalten (Log-Leak)"; fi
   # Keine externen Hosts in den Views (CDN-frei)
   if node scripts/check-branding.mjs "$TMP/image/public" --hosts | sed -n '/External hosts/,$p' | grep -E '^\s+[a-z0-9.-]+\.[a-z]+ ' | grep -v 'allgaeu-informatik.de\|couchchat.de'; then
     fail "Views laden externe Hosts (siehe oben)"

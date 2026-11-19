@@ -29,6 +29,7 @@ Immer vom unveränderten Upstream-Baum starten (`--out` oder frischer Container)
 | `20-views.mjs` | HTML-Views (`public/views/*`), komplett ersetzte Seiten (`branding/views/*`), CSS (Google-Fonts-Import entfernen, harte Farben auf Petrol-Palette mappen). |
 | `30-texts.mjs` | Sprachdateien (`public/lang/*.json`) und JS-Strings (`brand.js`-Fallback, `client.js`, ...). |
 | `40-server.mjs` | Serverseitige Patches unter `app/src/` (Telemetrie, Redirects, config.js-Defaults, Mail-/API-Texte; Umfang im Kopfkommentar) und Host-Schutz, siehe Abschnitt „Host-Schutz“ unten. |
+| `45-host-users.mjs` | Host-Nutzer aus Datei (`HOST_USERS_FILE`) mit scrypt-Hashes, siehe Abschnitt „Host-Nutzer aus Datei“ unten. |
 | `50-vendor.mjs` | CDN-Self-Hosting nach `public/vendor/`, Entfernen nicht selbst hostbarer Drittanbieter (Umfang im Kopfkommentar). |
 | `60-backgrounds.mjs` | Raumhintergründe: Manifest und statische Auslieferung aus `/src/backgrounds` (im Image) plus optional `/src/backgrounds-extra` (Mount); Client lädt das Manifest. |
 | `90-cleanup.mjs` | Nicht mehr referenzierte Upstream-Dateien löschen (läuft zuletzt, sieht alle anderen Patches). |
@@ -53,6 +54,37 @@ Jitsi-ähnliches Verhalten bei `HOST_PROTECTED=true`:
 - Der getippte Name bleibt im `join` erhalten (`HOST_USERS.displayname` nur als Fallback bei leerem Namen);
   `GET /hostIdentity` liefert für `HOST_USERS` daher immer `locked:false`. OIDC-Verhalten ist unverändert.
 - `handleRoomNotAllowed` ist deutsch mit Button „Zur Startseite“.
+
+## Raumliste für die Admin-Statistik (40-server)
+
+Upstream liefert `GET /api/v1/activeRooms` nur bei `SHOW_ACTIVE_ROOMS=true` und dann **ohne** Authentifizierung (Raumliste öffentlich). Der Patch erlaubt den
+Endpunkt zusätzlich, wenn der Header `authorization` dem `API_KEY_SECRET` entspricht (gleiche Prüfung wie bei `/api/v1/stats`). `SHOW_ACTIVE_ROOMS` kann so `false`
+bleiben; die Seite `/activeRooms` bleibt dann ebenfalls aus. Die Antwort enthält nur Raum-ID, Teilnehmerzahl und Join-URL, keine Namen. `/api/v1/meetings`
+(liefert Teilnehmernamen) bleibt über `API_DISABLED=["token","meetings"]` abgeschaltet. Caddy sperrt `/api/*` von außen; das Admin-Panel erreicht die API nur über das Docker-Netz.
+
+## Host-Nutzer aus Datei (45-host-users, data/host-users-loader.js)
+
+Das Admin-Panel schreibt `host-users.json` atomar (tmp + fsync + rename) in ein Verzeichnis, das CouchChat read-only unter
+`/hostdata` einbindet (immer das **Verzeichnis** mounten; eine einzeln gemountete Datei behält nach dem Rename den alten Inode).
+
+- `HOST_USERS_FILE=/hostdata/host-users.json` gesetzt: Nutzer kommen **nur** aus der Datei, `HOST_USERS` wird ignoriert
+  (Info im Log). Ohne die Variable bleibt das Upstream-Verhalten (`HOST_USERS` mit Klartext-Passwörtern) unverändert.
+- Format: `{"version":1,"generated_at":"…","users":[{"username","password_hash","displayname","allowed_rooms"}]}`,
+  Hash `scrypt$N$r$p$salt(base64)$key(base64)`. Verglichen wird mit `crypto.scryptSync` und `timingSafeEqual`;
+  ein fehlerhafter Hash trifft nie.
+- Zweiter Hash-Typ für aus Jitsi/Prosody übernommene Konten (bis zum ersten Panel-Login, danach stellt das Panel auf scrypt um):
+  `scram-sha1$<Iterationen>$<Salt base64>$<StoredKey hex>`. Der Salt ist der Salt-**String** der Prosody-Datei (UTF-8-Bytes, base64). Geprüft wird nach RFC 5802:
+  `PBKDF2-HMAC-SHA1(NFKC(Passwort), Salt, Iterationen, 20)`, dann `HMAC(…, "Client Key")`, dann `SHA1` = StoredKey (`timingSafeEqual`). Iterationen 1 bis 100000.
+  Gleiche Drosselung, gleicher Cache und gleiches Dummy-Timing wie bei scrypt (nach jeder SCRAM-Prüfung läuft zusätzlich ein Dummy-scrypt, damit sich Altkonten nicht über die Laufzeit verraten).
+- Vor jeder Anmeldung (`getAuthPeer`) prüft `statSync` Inode, mtime, ctime und Größe (der atomare Austausch durch das Panel liefert einen neuen Inode); bei Änderung wird neu gelesen. Bei Parse-/Validierungsfehlern
+  bleibt die alte Liste aktiv (Warnung ohne Dateiinhalt). Einträge mit unbekanntem `password_hash`-Typ (z. B. SCRAM bei einem älteren Image) werden einzeln übersprungen (Warnung mit Anzahl), der Rest der Datei bleibt gültig; das neue Image muss daher vor dem ersten Import ausgerollt werden. Fehlt die Datei beim Start, startet der Server mit leerer Liste und warnt.
+- Erfolgreiche Prüfungen liegen in einem kleinen Cache (sha256 aus Hash + Passwort, max. 500 Einträge, bei jedem Neuladen geleert).
+- Passwörter werden vor dem Hashen/Prüfen NFC-normalisiert (wie im Admin-Panel), damit z. B. ein auf macOS/iOS zerlegt getipptes „é“ passt.
+- Unbekannte Benutzernamen kosten einen Dummy-scrypt (kein Timing-Orakel); fehlgeschlagene Prüfungen werden pro Benutzername auf 10/Minute
+  begrenzt (unbekannte Namen teilen sich einen Zähler mit 30/Minute). Gedrosselte Versuche laufen ohne scrypt; bereits gecachte richtige Passwörter gehen weiter durch.
+- Die Nutzerliste (mit Hashes) bleibt im Loader; `hostCfg.users` ist im Dateimodus leer, weil Upstream `hostCfg` beim Start als „Server config“ loggt.
+- `validate.js`: Login-Passwortlänge bis 128 Zeichen (Upstream 36). Die Startprüfung überspringt Einträge mit `password_hash`.
+- Test: `node --test scripts/test/host-users.test.mjs` (enthält den gemeinsamen Testvektor „Couch!Chat9“).
 
 ## Modul-Vertrag
 
