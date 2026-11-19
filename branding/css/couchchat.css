@@ -1,0 +1,370 @@
+/*
+ * CouchChat - Marken-Overrides (Allgäu Informatik GmbH).
+ * Wird von scripts/patches/20-views.mjs als LETZTES Stylesheet in jede View eingebunden (nach /css/fonts.css).
+ * Hartkodierte Upstream-Blautöne (#4678f9, #376df9, rgba(70,120,249,..) usw.) ersetzt der Patcher zusätzlich
+ * direkt in den CSS-Dateien (Tabellen HEX_MAP/RGB_MAP in scripts/patches/20-views.mjs); hier stehen Tokens und Struktur.
+ *
+ * Palette: petrol #006e96 (primär), #0a86ad (hover), #56b8de (hell), #0c4c66 (dunkel),
+ *          gold #e5a407, lime #6e8f12, ink #1b2a3d, navy-950 #16222f, navy-900 #233749, paper #fcfcfc
+ */
+
+:root {
+    /* Gemeinsame Design-Tokens (_tokens.css) */
+    --ds-brand-50: #eaf6fb;
+    --ds-brand-100: #cfeaf5;
+    --ds-brand-300: #56b8de;
+    --ds-brand-500: #0a86ad;
+    --ds-brand-600: #006e96;
+    --ds-brand-700: #0c4c66;
+
+    --ds-neutral-0: #ffffff;
+    --ds-neutral-50: #fcfcfc;
+    --ds-neutral-100: #e6edf3;
+    --ds-neutral-300: #a9b8c6;
+    --ds-neutral-500: #6b8196;
+    --ds-neutral-700: #233749;
+    --ds-neutral-800: #1b2a3d;
+    --ds-neutral-900: #16222f;
+
+    --ds-warning: #e5a407;
+    --ds-info: #56b8de;
+    --ds-shadow-focus: 0 0 0 2px var(--ds-brand-500), 0 0 0 4px rgba(10, 134, 173, 0.28);
+    --ds-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    /* Landing / newcall / login / waitingRoom */
+    --landing-bg: #16222f;
+    --landing-surface: #233749;
+    --landing-surface-raised: #2b4358;
+    --landing-border: rgba(255, 255, 255, 0.1);
+    --landing-border-hover: rgba(86, 184, 222, 0.45);
+    --landing-text: #f4f8fb;
+    --landing-text-muted: #a9b8c6;
+    --landing-primary: #006e96;
+    --landing-primary-bright: #0a86ad;
+    --landing-secondary: #e5a407;
+    --landing-accent: #e5a407;
+
+    /* Raum (client.css Standard-Dunkel); der Patcher setzt dieselben Werte im Theme "dark" in client.js */
+    --body-bg: radial-gradient(#233749, #16222f);
+    --msger-bg: radial-gradient(#233749, #16222f);
+    --msger-private-bg: radial-gradient(#233749, #16222f);
+    --wb-bg: radial-gradient(#233749, #16222f);
+    --navbar-bg: rgba(22, 34, 47, 0.88);
+    --select-bg: #2b4358;
+    --tab-btn-active: #35516a;
+    --left-msg-bg: #233749;
+    --right-msg-bg: #2f4a61;
+    --private-msg-bg: #1d2f40;
+    --btn-bar-bg-color: #e6edf3;
+    --btn-bar-color: #16222f;
+    --btns-bg-color: rgba(22, 34, 47, 0.78);
+    --dd-color: #e6edf3;
+    --toggle-on-bg: #006e96;
+    --room-switch-accent: #56b8de;
+    --file-transfer-accent: #56b8de;
+    --file-transfer-accent-soft: rgba(86, 184, 222, 0.18);
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--ds-font-sans);
+}
+
+body.has-animations {
+    background-color: var(--landing-bg);
+    background-image: linear-gradient(160deg, #16222f 0%, #1b2a3d 55%, #0c4c66 140%);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Hero-Hintergrundbild (blau, upstream) durch dezenten Petrol-Verlauf ersetzen */
+.illustration-section-01::after {
+    background-image:
+        radial-gradient(ellipse 60% 45% at 50% 0%, rgba(0, 110, 150, 0.45), rgba(0, 110, 150, 0) 70%),
+        radial-gradient(ellipse 35% 30% at 85% 20%, rgba(229, 164, 7, 0.08), rgba(229, 164, 7, 0) 70%) !important;
+    background-size: 100% 100% !important;
+}
+
+.illustration-section-02::after {
+    background-image: none !important;
+}
+
+/* Kopfzeile: rundes Zeichen + Wortmarke */
+.site-header .brand a.cc-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+}
+
+.cc-brand img {
+    display: block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.cc-brand-name {
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.01em;
+    color: var(--landing-text);
+}
+
+/* Funktions-Abschnitt (ersetzt den englischen Upstream-Block) */
+.cc-features {
+    padding: 2.5rem 0 3rem;
+}
+
+.cc-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+    .cc-features-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .cc-features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cc-feature {
+    padding: 1.5rem;
+    border: 1px solid var(--landing-border);
+    border-radius: 14px;
+    background: var(--landing-surface);
+    text-align: left;
+}
+
+.cc-feature h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    color: var(--landing-text);
+}
+
+.cc-feature p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--landing-text-muted);
+}
+
+.cc-feature:hover {
+    border-color: var(--landing-border-hover);
+}
+
+/* Fußzeile (branding/partials/footer.html) */
+.cc-footer .cc-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding: 1.5rem 0;
+    font-size: 0.85rem;
+    color: var(--landing-text-muted);
+}
+
+.cc-footer .footer-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cc-footer a {
+    color: var(--landing-text-muted);
+    text-decoration: none;
+}
+
+.cc-footer a:hover,
+.cc-footer a:focus-visible {
+    color: var(--ds-brand-300);
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .cc-footer .cc-footer-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .cc-footer .footer-nav ul {
+        justify-content: center;
+    }
+}
+
+/* Links und Fokus im Markenton */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline-color: var(--ds-brand-500);
+}
+
+::selection {
+    background: rgba(86, 184, 222, 0.35);
+}
+
+.site-footer.cc-footer {
+    background: #111b26;
+    border-top: 1px solid var(--landing-border);
+}
+
+.cc-footer .footer-copyright,
+.cc-footer .footer-nav a,
+.cc-footer .cc-footer-service {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------------------------------------------
+ * Dialoge (SweetAlert2) und Raum-Hervorhebungen im Markenton
+ * Das Upstream-Stylesheet von SweetAlert2 bringt eigene Blau-/Violett-/Grüntöne mit; hier auf Petrol gesetzt.
+ * Semantische Statusfarben (Erfolg grün, Fehler rot, Warnung gold) bleiben bewusst erhalten.
+ * ---------------------------------------------------------------------------------------------------- */
+
+/* "Raum teilen": Hervorhebungen (QR-Hinweis, Raumlink) */
+.share-room-modal-highlight {
+    color: var(--ds-brand-300) !important;
+}
+
+.swal2-popup .swal2-styled:focus {
+    box-shadow: 0 0 0 3px rgba(86, 184, 222, 0.45) !important;
+}
+
+.swal2-popup .swal2-input:focus,
+.swal2-popup .swal2-textarea:focus,
+.swal2-popup .swal2-select:focus {
+    border-color: var(--ds-brand-500) !important;
+    box-shadow: 0 0 0 3px rgba(10, 134, 173, 0.3) !important;
+}
+
+.swal2-popup .swal2-icon.swal2-info {
+    border-color: var(--ds-brand-300);
+    color: var(--ds-brand-300);
+}
+
+.swal2-popup .swal2-timer-progress-bar {
+    background: rgba(86, 184, 222, 0.55);
+}
+
+.swal2-popup .swal2-checkbox input:checked + .swal2-label::before,
+.swal2-popup .swal2-radio input:checked + .swal2-label::before {
+    border-color: var(--ds-brand-500);
+}
+
+/* Raum anpassen: Schalter-Beschriftung deutsch, Statusanzeige im Markenton statt Grün */
+:root {
+    --cr-success: var(--ds-brand-300);
+}
+
+.cr-switch::before {
+    content: 'AUS';
+}
+
+.cr-switch-wrap input:checked + .cr-switch::before {
+    content: 'AN';
+}
+
+.cr-summary-status span {
+    box-shadow: 0 0 0 5px rgba(86, 184, 222, 0.18);
+}
+
+/* ------------------------------------------------------------------------------------------------------
+ * Gastgeber-Dialog im Raum (Warten + Anmeldung), erzeugt von handleUnauthorized() in client.js
+ * ---------------------------------------------------------------------------------------------------- */
+.swal2-popup.cc-gate {
+    width: min(30rem, 92vw);
+}
+
+.cc-gate .cc-gate-body {
+    text-align: left;
+    color: var(--ds-neutral-100);
+}
+
+.cc-gate .cc-gate-status {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.cc-gate .cc-gate-spinner {
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.2rem;
+    border: 2px solid rgba(86, 184, 222, 0.3);
+    border-top-color: var(--ds-brand-300);
+    border-radius: 50%;
+    animation: cc-gate-spin 0.9s linear infinite;
+}
+
+@keyframes cc-gate-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cc-gate .cc-gate-spinner {
+        animation: none;
+    }
+}
+
+.cc-gate .cc-gate-sep {
+    margin: 1.25rem 0 1rem;
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cc-gate .cc-gate-heading {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ds-neutral-0);
+}
+
+.cc-gate .cc-gate-label {
+    display: block;
+    margin: 0.6rem 0 0.25rem;
+    font-size: 0.9rem;
+    color: var(--ds-neutral-300);
+}
+
+.cc-gate .cc-gate-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    background: var(--ds-neutral-900);
+    color: var(--ds-neutral-0);
+    font: inherit;
+}
+
+.cc-gate .cc-gate-input:focus {
+    outline: none;
+    border-color: var(--ds-brand-500);
+    box-shadow: var(--ds-shadow-focus);
+}
+
+.cc-gate .swal2-validation-message {
+    margin: 0.75rem 0 0;
+}

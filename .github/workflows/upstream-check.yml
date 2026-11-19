@@ -1,0 +1,118 @@
+# Weekly check for a new official MiroTalk P2P image. If the digest of mirotalk/p2p:latest differs from
+# upstream.env, a pull request updates upstream.env (and the Dockerfile default). The build workflow runs on that
+# PR: it fails loudly when a patch anchor no longer matches, which is the signal to adapt scripts/patches/*.mjs.
+#
+# Secret UPSTREAM_PR_TOKEN (optional but recommended): a fine-grained PAT (contents + pull requests write) or an
+# App token. Pull requests created with the default GITHUB_TOKEN do NOT trigger other workflows, so without the
+# secret the PR is created but the build has to be started by hand (workflow_dispatch on the PR branch).
+# The repository setting "Allow GitHub Actions to create and approve pull requests" must be enabled.
+name: upstream-check
+
+on:
+  schedule:
+    - cron: '17 5 * * 1' # Mondays 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ secrets.UPSTREAM_PR_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Detect new upstream image
+        id: detect
+        run: |
+          set -euo pipefail
+          . ./upstream.env
+          new_digest="$(docker buildx imagetools inspect mirotalk/p2p:latest --format '{{.Manifest.Digest}}')"
+          case "$new_digest" in sha256:*) ;; *) echo "::error::unexpected digest '$new_digest'"; exit 1 ;; esac
+          old_digest="${MIROTALK_IMAGE##*@}"
+          echo "pinned:  $old_digest"
+          echo "latest:  $new_digest"
+          if [ "$new_digest" = "$old_digest" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          new_image="mirotalk/p2p@${new_digest}"
+          docker pull -q "$new_image"
+          new_version="$(docker run --rm --entrypoint node "$new_image" -p "require('/src/package.json').version")"
+          if [ -z "$new_version" ]; then echo "::error::could not determine version from the new image"; exit 1; fi
+          # Upstream publishes no release tags. Find a commit whose package.json version equals the image version:
+          # HEAD of the default branch if it matches, otherwise the newest commit that touched package.json with
+          # that version (blobless clone, blobs are fetched on demand). Still an approximation of the exact build
+          # commit (the PR text asks for a manual check), but never a commit with a different version.
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/miroslavpejic85/mirotalk.git "$RUNNER_TEMP/up"
+          pkg_version() { git -C "$RUNNER_TEMP/up" show "$1:package.json" 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).version||'')}catch{console.log('')}})"; }
+          new_commit=""
+          head_commit="$(git -C "$RUNNER_TEMP/up" rev-parse HEAD)"
+          if [ "$(pkg_version "$head_commit")" = "$new_version" ]; then
+            new_commit="$head_commit"
+          else
+            for c in $(git -C "$RUNNER_TEMP/up" log -n 200 --format=%H -- package.json); do
+              if [ "$(pkg_version "$c")" = "$new_version" ]; then new_commit="$c"; break; fi
+            done
+          fi
+          if [ -z "$new_commit" ]; then
+            echo "::error::no upstream commit with package.json version $new_version found (HEAD is $head_commit, version '$(pkg_version "$head_commit")'). Set MIROTALK_COMMIT by hand."
+            exit 1
+          fi
+          echo "commit with version $new_version: $new_commit (HEAD: $head_commit)"
+          {
+            echo "changed=true"
+            echo "image=$new_image"
+            echo "version=$new_version"
+            echo "commit=$new_commit"
+            echo "old_version=$MIROTALK_VERSION"
+            echo "short=${new_digest:7:8}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update upstream.env and Dockerfile, open pull request
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.UPSTREAM_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          IMAGE: ${{ steps.detect.outputs.image }}
+          VERSION: ${{ steps.detect.outputs.version }}
+          COMMIT: ${{ steps.detect.outputs.commit }}
+          OLD_VERSION: ${{ steps.detect.outputs.old_version }}
+          SHORT: ${{ steps.detect.outputs.short }}
+        run: |
+          set -euo pipefail
+          branch="upstream/${VERSION}-${SHORT}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "branch $branch already exists, nothing to do"; exit 0
+          fi
+          sed -i \
+            -e "s|^MIROTALK_IMAGE=.*|MIROTALK_IMAGE=${IMAGE}|" \
+            -e "s|^MIROTALK_VERSION=.*|MIROTALK_VERSION=${VERSION}|" \
+            -e "s|^MIROTALK_COMMIT=.*|MIROTALK_COMMIT=${COMMIT}|" upstream.env
+          sed -i "s|^ARG UPSTREAM_IMAGE=.*|ARG UPSTREAM_IMAGE=${IMAGE}|" Dockerfile
+          git config user.name "couchchat-upstream-check"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add upstream.env Dockerfile
+          git commit -m "Upstream ${VERSION}: pin ${IMAGE##*@}"
+          git push origin "$branch"
+          {
+            echo "Automatischer Vorschlag: neues offizielles MiroTalk-P2P-Image."
+            echo
+            echo "- Version: ${OLD_VERSION} -> ${VERSION}"
+            echo "- Image: \`${IMAGE}\`"
+            echo "- Upstream-Commit (package.json-Version geprueft): \`${COMMIT}\`"
+            echo
+            echo "Achtung: Upstream veroeffentlicht keine Tags. Der Workflow hat geprueft, dass \`package.json\` im eingetragenen"
+            echo "Commit die Version ${VERSION} hat (HEAD von miroslavpejic85/mirotalk oder der neueste passende Commit). Der Commit"
+            echo "kann trotzdem neuer sein als der Stand, aus dem das Image gebaut wurde. Vor dem Merge pruefen und ggf. in"
+            echo "\`upstream.env\` korrigieren."
+            echo
+            echo "Der Build dieses PR schlaegt fehl, wenn ein Patch-Anker nicht mehr passt: dann \`scripts/patches/*.mjs\`"
+            echo "anpassen (README, Abschnitt Update-Prozedur). Nach dem Merge: Fork-Mirror aktualisieren und Tag"
+            echo "\`couchchat-v${VERSION}\` auf den Commit setzen."
+          } > body.md
+          gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" \
+            --title "Upstream MiroTalk ${VERSION}" --body-file body.md

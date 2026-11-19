@@ -1,0 +1,309 @@
+{
+    "_comment": "Wird von scripts/patch.mjs in public/lang/de.json gemergt. Der Schluessel ('key') ist der englische Quelltext aus dem Upstream-Code; fehlt er, bricht der Patcher ab. 'newKey' ist der Quelltext, den scripts/patch.mjs gleichzeitig in public/js/client.js bzw. landing.js setzt. 'translate' korrigiert vorhandene Eintraege von public/lang/de.json (nur de): Schluessel muss in der genannten Sektion genau einmal vorkommen; betrifft untranslatierte Upstream-Texte (Wert = Schluessel) und Du-Formen (CouchChat siezt).",
+    "remove": [
+        "Sponsor",
+        "Sponsor @miroslavpejic85 on GitHub",
+        "Star miroslavpejic85/mirotalk on GitHub"
+    ],
+    "replace": [
+        {
+            "key": "Free, open-source WebRTC video calls in your browser. Check out MiroTalk!",
+            "newKey": "Video calls in your browser. Try CouchChat!",
+            "value": "Videochats im Browser. Probieren Sie CouchChat aus!",
+            "others": "drop"
+        },
+        {
+            "key": "You can optionally rate your MiroTalk experience before you go.",
+            "newKey": "You can optionally rate your CouchChat experience before you go.",
+            "value": "Wenn Sie möchten, können Sie Ihre CouchChat-Erfahrung vor dem Verlassen bewerten.",
+            "others": "substitute"
+        }
+    ],
+    "translate": [
+        {
+            "section": "labels",
+            "key": "Access & invitations",
+            "value": "Zugang & Einladungen"
+        },
+        {
+            "section": "dialogs",
+            "key": "Copy invite",
+            "value": "Einladung kopieren"
+        },
+        {
+            "section": "buttons",
+            "key": "Keep controls visible",
+            "value": "Steuerung immer sichtbar"
+        },
+        {
+            "section": "buttons",
+            "key": "Voice Commands",
+            "value": "Sprachbefehle"
+        },
+        {
+            "section": "tooltips",
+            "key": "Volume",
+            "value": "Lautstärke"
+        },
+        {
+            "section": "labels",
+            "key": "Input device",
+            "value": "Eingabegerät"
+        },
+        {
+            "section": "labels",
+            "key": "Output device",
+            "value": "Ausgabegerät"
+        },
+        {
+            "section": "labels",
+            "key": "Media and screen",
+            "value": "Medien und Bildschirm"
+        },
+        {
+            "section": "labels",
+            "key": "Preferences",
+            "value": "Voreinstellungen"
+        },
+        {
+            "section": "labels",
+            "key": "Collaboration",
+            "value": "Zusammenarbeit"
+        },
+        {
+            "section": "labels",
+            "key": "Interface",
+            "value": "Oberfläche"
+        },
+        {
+            "section": "labels",
+            "key": "Shortcuts",
+            "value": "Tastenkürzel"
+        },
+        {
+            "section": "labels",
+            "key": "You say",
+            "value": "Sie sagen"
+        },
+        {
+            "section": "toasts",
+            "key": "Hide everyone",
+            "value": "Alle ausblenden"
+        },
+        {
+            "section": "toasts",
+            "key": "Hide video",
+            "value": "Video ausblenden"
+        },
+        {
+            "section": "toasts",
+            "key": "Mute audio",
+            "value": "Ton stummschalten"
+        },
+        {
+            "section": "toasts",
+            "key": "Mute everyone",
+            "value": "Alle stummschalten"
+        },
+        {
+            "section": "toasts",
+            "key": "Stop screen",
+            "value": "Bildschirmfreigabe beenden"
+        },
+        {
+            "section": "toasts",
+            "key": "Invite copied to clipboard",
+            "value": "Einladung in die Zwischenablage kopiert"
+        },
+        {
+            "section": "toasts",
+            "key": "Meeting URL copied to clipboard",
+            "value": "Meeting-Link in die Zwischenablage kopiert"
+        },
+        {
+            "section": "toasts",
+            "key": "Unable to copy the invite, please copy the URL manually",
+            "value": "Die Einladung konnte nicht kopiert werden, bitte kopieren Sie den Link manuell"
+        },
+        {
+            "section": "toasts",
+            "key": "Unable to copy to clipboard",
+            "value": "Kopieren in die Zwischenablage nicht möglich"
+        },
+        {
+            "section": "toasts",
+            "key": "Noise suppression disabled for everyone",
+            "value": "Rauschunterdrückung für alle deaktiviert"
+        },
+        {
+            "section": "toasts",
+            "key": "Noise suppression enabled for everyone",
+            "value": "Rauschunterdrückung für alle aktiviert"
+        },
+        {
+            "section": "toasts",
+            "key": "Voice commands are not available for the selected recognition language",
+            "value": "Sprachbefehle sind für die gewählte Erkennungssprache nicht verfügbar"
+        },
+        {
+            "section": "toasts",
+            "key": "Voice commands started",
+            "value": "Sprachbefehle gestartet"
+        },
+        {
+            "section": "toasts",
+            "key": "Voice commands stopped",
+            "value": "Sprachbefehle beendet"
+        },
+        {
+            "section": "toasts",
+            "key": "Failed to request Wake Lock:",
+            "value": "Verhindern der Bildschirmsperre fehlgeschlagen:"
+        },
+        {
+            "section": "labels",
+            "key": "Only you can see it. Saved in this browser.",
+            "value": "Nur Sie können es sehen. In diesem Browser gespeichert."
+        },
+        {
+            "section": "dialogs",
+            "key": "Hide everyone except yourself?",
+            "value": "Alle außer Ihnen selbst ausblenden?"
+        },
+        {
+            "section": "dialogs",
+            "key": "Mute everyone except yourself?",
+            "value": "Alle außer Ihnen selbst stummschalten?"
+        },
+        {
+            "section": "dialogs",
+            "key": "Stop screen sharing for everyone except yourself?",
+            "value": "Bildschirmfreigabe für alle außer Ihnen selbst beenden?"
+        },
+        {
+            "section": "dialogs",
+            "key": "Once stopped, you won't be able to start them, but they can start screen sharing themselves at any time.",
+            "value": "Nach dem Beenden können Sie die Freigabe nicht wieder für sie starten, aber sie können die Bildschirmfreigabe jederzeit selbst starten."
+        },
+        {
+            "section": "dialogs",
+            "key": "Oops, You are banned",
+            "value": "Ups, Sie wurden gesperrt"
+        },
+        {
+            "section": "toasts",
+            "key": "Choose a PNG, JPEG or WebP image up to 10 MB.",
+            "value": "Wählen Sie ein PNG-, JPEG- oder WebP-Bild mit maximal 10 MB."
+        },
+        {
+            "section": "toasts",
+            "key": "The presenter disabled noise suppression for you",
+            "value": "Der Moderator hat die Rauschunterdrückung für Sie deaktiviert"
+        },
+        {
+            "section": "toasts",
+            "key": "The presenter enabled noise suppression for you",
+            "value": "Der Moderator hat die Rauschunterdrückung für Sie aktiviert"
+        },
+        {
+            "section": "toasts",
+            "key": "Your device doesn't support the selected screen quality, please select another one.",
+            "value": "Ihr Gerät unterstützt die ausgewählte Bildschirmqualität nicht, bitte wählen Sie eine andere."
+        },
+        {
+            "section": "tooltips",
+            "key": "Close the chat (C)",
+            "value": "Chat schließen (C)"
+        },
+        {
+            "section": "tooltips",
+            "key": "Close the settings",
+            "value": "Einstellungen schließen"
+        },
+        {
+            "section": "tooltips",
+            "key": "Close the video player",
+            "value": "Videoplayer schließen"
+        },
+        {
+            "section": "tooltips",
+            "key": "Open the chat (C)",
+            "value": "Chat öffnen (C)"
+        },
+        {
+            "section": "tooltips",
+            "key": "Open the settings",
+            "value": "Einstellungen öffnen"
+        },
+        {
+            "section": "tooltips",
+            "key": "Open the settings (O)",
+            "value": "Einstellungen öffnen (O)"
+        },
+        {
+            "section": "tooltips",
+            "key": "Translate my messages",
+            "value": "Meine Nachrichten übersetzen"
+        },
+        {
+            "section": "tooltips",
+            "key": "Translate my messages to",
+            "value": "Meine Nachrichten übersetzen nach"
+        },
+        {
+            "section": "tooltips",
+            "key": "Markdown",
+            "value": "Markdown"
+        },
+        {
+            "section": "tooltips",
+            "key": "Participant hand is raised",
+            "value": "Hand des Teilnehmers ist gehoben"
+        },
+        {
+            "section": "tooltips",
+            "key": "Participant screen share is off",
+            "value": "Bildschirmfreigabe des Teilnehmers ist ausgeschaltet"
+        },
+        {
+            "section": "tooltips",
+            "key": "Participant screen share is on",
+            "value": "Bildschirmfreigabe des Teilnehmers ist eingeschaltet"
+        },
+        {
+            "section": "buttons",
+            "key": "Start captions",
+            "value": "Live-Untertitel starten"
+        },
+        {
+            "section": "buttons",
+            "key": "Start recording",
+            "value": "Aufzeichnung starten"
+        },
+        {
+            "section": "tooltips",
+            "key": "Start caption",
+            "value": "Live-Untertitel starten"
+        },
+        {
+            "section": "tooltips",
+            "key": "Stop caption",
+            "value": "Live-Untertitel stoppen"
+        },
+        {
+            "section": "dialogs",
+            "key": "Ok",
+            "value": "OK"
+        },
+        {
+            "section": "dialogs",
+            "key": "OK",
+            "value": "OK"
+        },
+        {
+            "section": "labels",
+            "key": "RTT",
+            "value": "Latenz (RTT)"
+        }
+    ]
+}

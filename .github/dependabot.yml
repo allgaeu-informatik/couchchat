@@ -1,0 +1,19 @@
+# Keeps SHA-pinned GitHub Actions and the digest-pinned node base image (vendor stage) up to date.
+# The upstream MiroTalk image is NOT handled here: upstream-check.yml owns it (it must also update upstream.env).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "docker"
+    ignore:
+      # Only the node base (pinned by digest) should be bumped; the upstream image has no usable tags anyway.
+      - dependency-name: mirotalk/p2p

@@ -1,0 +1,20 @@
+{
+    "_comment": "English fallback language: same keys as de.overrides.json, English values.",
+    "remove": [
+        "Sponsor",
+        "Sponsor @miroslavpejic85 on GitHub",
+        "Star miroslavpejic85/mirotalk on GitHub"
+    ],
+    "replace": [
+        {
+            "key": "Free, open-source WebRTC video calls in your browser. Check out MiroTalk!",
+            "newKey": "Video calls in your browser. Try CouchChat!",
+            "value": "Video calls in your browser. Try CouchChat!"
+        },
+        {
+            "key": "You can optionally rate your MiroTalk experience before you go.",
+            "newKey": "You can optionally rate your CouchChat experience before you go.",
+            "value": "You can optionally rate your CouchChat experience before you go."
+        }
+    ]
+}

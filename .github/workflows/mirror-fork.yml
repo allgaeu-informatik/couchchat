@@ -1,0 +1,42 @@
+# OPTIONAL, disabled by default: tags the upstream commit we run in the source mirror fork
+# (allgaeu-informatik/mirotalk) as couchchat-v<version>. Needs the secret FORK_PUSH_TOKEN (fine-grained PAT with
+# contents:write on the fork only). Enable by setting the repository variable ENABLE_FORK_MIRROR=true.
+# The manual alternative is part of the release checklist in the README.
+name: mirror-fork
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [upstream.env]
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    if: ${{ vars.ENABLE_FORK_MIRROR == 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Tag upstream commit in the fork
+        env:
+          FORK_PUSH_TOKEN: ${{ secrets.FORK_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          . ./upstream.env
+          if [ -z "${FORK_PUSH_TOKEN:-}" ]; then echo "::error::secret FORK_PUSH_TOKEN missing"; exit 1; fi
+          git clone --quiet "https://x-access-token:${FORK_PUSH_TOKEN}@github.com/allgaeu-informatik/mirotalk.git" fork
+          cd fork
+          git remote add upstream https://github.com/miroslavpejic85/mirotalk.git
+          git fetch --quiet upstream
+          git cat-file -e "${MIROTALK_COMMIT}^{commit}" || { echo "::error::commit ${MIROTALK_COMMIT} not found upstream"; exit 1; }
+          tag="couchchat-v${MIROTALK_VERSION}"
+          if git ls-remote --exit-code --tags origin "$tag" >/dev/null 2>&1; then
+            echo "tag $tag exists already"; exit 0
+          fi
+          git push --quiet origin "${MIROTALK_COMMIT}:refs/heads/main" || echo "::warning::main of the fork not fast-forwardable, tag only"
+          git tag "$tag" "${MIROTALK_COMMIT}"
+          git push origin "$tag"

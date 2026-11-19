@@ -1,0 +1,23 @@
+/* Self-hosted Inter (latin, SIL OFL 1.1, @fontsource/inter 5.2.8). Replaces Google Fonts.
+   Upstream hardcodes Montserrat / Lato / Fira Sans / IBM Plex Sans in several views; those names
+   are aliased to Inter below so no external font is ever requested. Paths are relative to /css/. */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/inter-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/inter-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url('../fonts/inter-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/inter-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/inter-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/inter-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:600;font-display:swap;src:url('../fonts/inter-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/inter-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/inter-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/inter-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-style:normal;font-weight:600;font-display:swap;src:url('../fonts/inter-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Lato';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/inter-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Fira Sans';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/inter-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Fira Sans';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/inter-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'Fira Sans';font-style:normal;font-weight:600;font-display:swap;src:url('../fonts/inter-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Fira Sans';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/inter-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/inter-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/inter-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url('../fonts/inter-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/inter-latin-700-normal.woff2') format('woff2')}

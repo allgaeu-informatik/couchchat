@@ -1,0 +1,14 @@
+# Lokale Entwicklung: Image wird aus dem Dockerfile gebaut (docker compose build oder scripts/build-image.sh),
+# Port-Mapping auf localhost. Die Upstream-Version steht im Dockerfile-Default und in upstream.env
+# (scripts/build-image.sh uebergibt sie explizit; CI prueft, dass beide uebereinstimmen).
+services:
+  couchchat:
+    image: couchchat:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${LOCAL_PORT:-3020}:3000"
+    # Raumhintergruende sind im Image enthalten (wie in Produktion). Zusaetzliche Bilder zum Testen:
+    # volumes:
+    #   - ./backgrounds-extra:/src/backgrounds-extra:ro

@@ -1,0 +1,125 @@
+# Build, test and publish the CouchChat image.
+#   - pull_request / push / dispatch: build, start the container, run scripts/smoke-test.sh
+#   - push to main and tags v*: additionally push to ghcr.io/allgaeu-informatik/couchchat
+# The pushed image is exactly the one that was tested (single build, loaded locally, re-tagged and pushed).
+# Image tags: <upstream_version>-<short sha> (always), <upstream_version> and latest (main only), v* git tag name (tags).
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  # Only superseded pull request runs are cancelled; a run that may push an image is never cancelled half way.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE_NAME: ghcr.io/allgaeu-informatik/couchchat
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read upstream.env
+        id: up
+        run: |
+          set -euo pipefail
+          . ./upstream.env
+          : "${MIROTALK_IMAGE:?}" "${MIROTALK_VERSION:?}" "${MIROTALK_COMMIT:?}"
+          # The Dockerfile default must match upstream.env (docker compose build uses the default).
+          grep -qF "ARG UPSTREAM_IMAGE=${MIROTALK_IMAGE}" Dockerfile || { echo "::error::Dockerfile ARG UPSTREAM_IMAGE differs from upstream.env"; exit 1; }
+          {
+            echo "image=${MIROTALK_IMAGE}"
+            echo "version=${MIROTALK_VERSION}"
+            echo "commit=${MIROTALK_COMMIT}"
+            echo "digest=${MIROTALK_IMAGE##*@}"
+            echo "short=${GITHUB_SHA::7}"
+            echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # linux/amd64 only. arm64: add "platforms: linux/amd64,linux/arm64" plus docker/setup-qemu-action
+      # (the upstream image is multi-arch; the smoke test below would still run on amd64 only).
+      - name: Build image (once, loaded locally; this exact image is tested and pushed)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          load: true
+          tags: couchchat:ci
+          build-args: |
+            UPSTREAM_IMAGE=${{ steps.up.outputs.image }}
+            UPSTREAM_VERSION=${{ steps.up.outputs.version }}
+            UPSTREAM_DIGEST=${{ steps.up.outputs.digest }}
+            UPSTREAM_COMMIT=${{ steps.up.outputs.commit }}
+            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ steps.up.outputs.date }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start guard refuses placeholders
+        run: |
+          if docker run --rm -e JWT_KEY=REPLACE_ME couchchat:ci; then
+            echo "::error::container started with JWT_KEY=REPLACE_ME"; exit 1
+          fi
+
+      - name: Start container with test configuration
+        run: |
+          set -euo pipefail
+          scripts/init-local-env.sh
+          docker run -d --name couchchat-ci --env-file couchchat.env -p 3020:3000 \
+            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true couchchat:ci
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://localhost:3020/robots.txt; then echo "up after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          docker logs couchchat-ci
+          echo "::error::container did not become ready"; exit 1
+
+      - name: Smoke test (image files and HTTP)
+        run: IMAGE=couchchat:ci BASE_URL=http://localhost:3020 scripts/smoke-test.sh
+
+      - name: Container logs
+        if: always()
+        run: docker logs couchchat-ci 2>&1 | tail -n 80 || true
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Re-tag and push the image that passed the tests; nothing is rebuilt.
+      - name: Push tested image
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        env:
+          VERSION: ${{ steps.up.outputs.version }}
+          SHORT: ${{ steps.up.outputs.short }}
+        run: |
+          set -euo pipefail
+          tags=("${IMAGE_NAME}:${VERSION}-${SHORT}")
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            tags+=("${IMAGE_NAME}:${VERSION}" "${IMAGE_NAME}:latest")
+          else
+            tags+=("${IMAGE_NAME}:${GITHUB_REF_NAME}")
+          fi
+          for t in "${tags[@]}"; do
+            docker tag couchchat:ci "$t"
+            docker push "$t"
+          done

@@ -1,0 +1,11 @@
+# Geheimnisse und lokale Dateien
+couchchat.env
+.env
+coturn/turnserver.conf
+# Lokale Build-/Test-Artefakte (Patcher-Ausgabe, Upstream-Kopie fuer Tests)
+build/
+node_modules/
+
+# Raumhintergruende: branding/backgrounds/*.webp sind eigenes Markenmaterial und versioniert (NOTICE.md, Punkt 2).
+# Nur die Originale (Quelldateien der KI-Generierung, grosse PNGs) bleiben lokal.
+branding/backgrounds/_originals/

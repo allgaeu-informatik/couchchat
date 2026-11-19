@@ -1,0 +1,51 @@
+# Beispiel fuer den Caddy, der vor CouchChat steht (gleiches Docker-Netzwerk, siehe CADDY_NETWORK).
+# In die bestehende Caddyfile uebernehmen. Validierung:
+#   docker run --rm -v "$PWD/Caddyfile.example:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
+
+www.couchchat.de {
+	redir https://couchchat.de{uri} permanent
+}
+
+couchchat.de {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Content-Type-Options "nosniff"
+		Permissions-Policy "camera=(self), microphone=(self), display-capture=(self), geolocation=()"
+
+		# Content-Security-Policy: das Image laedt nichts von Drittanbietern (kein CDN). Begruendung je Zeile:
+		#  - script-src: nur eigene Dateien; kein 'unsafe-inline' (die Views enthalten keine Inline-Skripte),
+		#    'wasm-unsafe-eval' fuer WebAssembly (RNNoise-Rauschunterdrueckung, Hintergrund-Effekte).
+		#  - style-src 'unsafe-inline': Bibliotheken (SweetAlert, Tippy, Quill) setzen Inline-Styles.
+		#  - connect-src: Socket.IO (wss) und die eigenen JSON-Endpunkte.
+		#  - img-src/media-src blob:/data: fuer Vorschauen, Aufnahmen, Hintergrundbilder und Avatare.
+		#  - worker-src: Web Worker (Hintergrund-Effekte) und AudioWorklets kommen von der eigenen Origin.
+		#  - frame-src https:: der Raum-Funktion "Video-URL teilen" haengt ein iframe mit frei gewaehlter URL.
+		#    Wer die Funktion nicht braucht, setzt hier 'none'.
+		# Erweiterung bei Bedarf (z. B. ein neues Feature mit externem Host): Host in der passenden Direktive ergaenzen.
+		# Erster Rollout: Header-Namen testweise auf Content-Security-Policy-Report-Only stellen und die Browser-Konsole pruefen.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' wss://couchchat.de; worker-src 'self' blob:; frame-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'"
+		-Server
+	}
+
+	# Datenschutzerklaerung liegt bei der Allgaeu Informatik GmbH
+	redir /privacy https://allgaeu-informatik.de/datenschutz permanent
+
+	# Pfade, die der normale Client-Ablauf NICHT braucht und die gesperrt werden:
+	#   /slack, /mattermost*       Integrationen (deaktiviert)
+	#   /activeRooms               Raumliste (SHOW_ACTIVE_ROOMS=false)
+	#   /logout                    nur mit OIDC
+	#   /isWidgetRoomActive        Widget (deaktiviert)
+	#   /api/*                     REST-API und Swagger-Doku (/api/v1/docs); externe Anbindung ist nicht vorgesehen
+	#   /about, /stats, /metrics   Upstream-Infoseiten bzw. Betriebsdaten (der Server leitet /about auf die Homepage um)
+	#   /icetest*                  ICE-Testseite (zum Debuggen von TURN zeitweise aus dieser Liste nehmen)
+	#   /iframe*, /widget*         Embed-Demos
+	# BEWUSST OFFEN (der Client ruft sie auf): /brand /themes /buttons /oidcIdentity /hostIdentity /profile
+	#   /createRoomToken /oidcPresenterToken /isRoomActive /join/* /socket.io/* /login /logged sowie alle statischen Dateien.
+	@blocked path /slack /mattermost /mattermost/* /activeRooms /logout /isWidgetRoomActive /api/* /about /about/* /stats /metrics /icetest /icetest/* /iframe /iframe/* /widget /widget/*
+	respond @blocked 404
+
+	reverse_proxy couchchat:3000
+}

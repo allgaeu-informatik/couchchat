@@ -1,0 +1,328 @@
+{
+  "_comment": "Pinned third-party browser libraries, self-hosted under /vendor/<name>/ (no CDN at runtime). Fill/refresh integrity values with: node scripts/vendor.mjs --lock vendor.lock.json --update-lock",
+  "entries": [
+    {
+      "name": "fontawesome",
+      "type": "npm",
+      "package": "@fortawesome/fontawesome-free",
+      "version": "6.4.2",
+      "license": "CC-BY-4.0 AND OFL-1.1 AND MIT",
+      "files": {
+        "css/all.min.css": "css/all.min.css",
+        "webfonts/": "webfonts/"
+      },
+      "integrity": "sha512-m5cPn3e2+FDCOgi1mz0RexTUvvQibBebOUlUlW0+YrMjDTPkiJ6VTKukA1GRsvRw+12KyJndNjj0O4AgTxm2Pg=="
+    },
+    {
+      "name": "animate-css",
+      "type": "npm",
+      "package": "animate.css",
+      "version": "4.1.1",
+      "license": "MIT",
+      "files": {
+        "animate.min.css": "animate.min.css"
+      },
+      "integrity": "sha512-+mRmCTv6SbCmtYJCN4faJMNFVNN5EuCTTprDTAo7YzIGji2KADmakjVA3+8mVDkZ2Bf09vayB35lSQIex2+QaQ=="
+    },
+    {
+      "name": "quill",
+      "type": "npm",
+      "package": "quill",
+      "version": "2.0.3",
+      "license": "BSD-3-Clause",
+      "files": {
+        "dist/quill.js": "quill.js",
+        "dist/quill.snow.css": "quill.snow.css"
+      },
+      "integrity": "sha512-xEYQBqfYx/sfb33VJiKnSJp8ehloavImQ2A6564GAbqG55PGw1dAWUn1MUbQB62t0azawUS2CZZhWCjO8gRvTw=="
+    },
+    {
+      "name": "flatpickr",
+      "type": "npm",
+      "package": "flatpickr",
+      "version": "4.6.13",
+      "license": "MIT",
+      "files": {
+        "dist/flatpickr.min.js": "flatpickr.min.js",
+        "dist/flatpickr.min.css": "flatpickr.min.css",
+        "dist/themes/airbnb.css": "themes/airbnb.css"
+      },
+      "integrity": "sha512-97PMG/aywoYpB4IvbvUJi0RQi8vearvU0oov1WW3k0WZPBMrTQVqekSX5CjSG/M4Q3i6A/0FKXC7RyAoAUUSPw=="
+    },
+    {
+      "name": "pickr",
+      "type": "npm",
+      "package": "@simonwep/pickr",
+      "version": "1.9.1",
+      "license": "MIT",
+      "files": {
+        "dist/pickr.min.js": "pickr.min.js",
+        "dist/pickr.es5.min.js": "pickr.es5.min.js",
+        "dist/themes/classic.min.css": "themes/classic.min.css",
+        "dist/themes/monolith.min.css": "themes/monolith.min.css",
+        "dist/themes/nano.min.css": "themes/nano.min.css"
+      },
+      "note": "last release shipping pickr.es5.min.js (upstream loads it); upstream used unpinned latest",
+      "integrity": "sha512-fR3qmfAcPf/HSFS7GEnTmZLM3+xERv1+jyMBbzT63ilRRM8veYjI7ELvkHHKk0/du3lHp7uh/FqatjM3646X1g=="
+    },
+    {
+      "name": "highlightjs",
+      "type": "npm",
+      "package": "@highlightjs/cdn-assets",
+      "version": "11.10.0",
+      "license": "BSD-3-Clause",
+      "files": {
+        "highlight.min.js": "highlight.min.js",
+        "styles/atom-one-dark.min.css": "styles/atom-one-dark.min.css"
+      },
+      "integrity": "sha512-vWXpu+Rdm0YMJmugFdUiL/9DmgYjEiV+d5DBqlXdApnGPSIeo6+LRS5Hpx6fvVsKkvR4RsLYD9rQ6DOLkj7OKA=="
+    },
+    {
+      "name": "webrtc-adapter",
+      "type": "npm",
+      "package": "webrtc-adapter",
+      "version": "9.0.6",
+      "license": "BSD-3-Clause",
+      "note": "upstream used adapter-latest.js; pinned to the current release",
+      "files": {
+        "out/adapter.js": "adapter.js"
+      },
+      "integrity": "sha512-CHbl2ZQbxx164IgWRgzJno4hWtM4tFbRam1QfI3Yxhs3w/DvqluVxVWeXs3oL5/fbGkSNLKo0Ty5MgUWceNhog=="
+    },
+    {
+      "name": "xss",
+      "type": "npm",
+      "package": "xss",
+      "version": "1.0.17",
+      "license": "MIT",
+      "note": "upstream used unpinned latest",
+      "files": {
+        "dist/xss.min.js": "xss.min.js"
+      },
+      "integrity": "sha512-+SEr5IDSgTBnhT6bnnf0mVRHT91+HU517zkahLNhkWLz8retCgeR1YDT4OknLiExA5+chn2Wy7z3KyjvnD8A2w=="
+    },
+    {
+      "name": "marked",
+      "type": "npm",
+      "package": "marked",
+      "version": "18.2.1",
+      "license": "MIT",
+      "note": "upstream used unpinned latest",
+      "files": {
+        "lib/marked.umd.js": "marked.umd.js"
+      },
+      "integrity": "sha512-ii4bxCTCqqwpT86XZWgJNs+ZnAIZksmLGYMViWA7PDIXYIeNo1x6cDdX3JOip9NM/cI6p8z57FxliACboTruMA=="
+    },
+    {
+      "name": "sweetalert2",
+      "type": "npm",
+      "package": "sweetalert2",
+      "version": "11.4.8",
+      "license": "MIT",
+      "files": {
+        "dist/sweetalert2.all.js": "sweetalert2.all.js"
+      },
+      "integrity": "sha512-BDS/+E8RwaekGSxCPUbPnsRAyQ439gtXkTF/s98vY2l9DaVEOMjGj1FaQSorfGREKsbbxGSP7UXboibL5vgTMA=="
+    },
+    {
+      "name": "fabric",
+      "type": "npm",
+      "package": "fabric",
+      "version": "5.3.0-browser",
+      "license": "MIT",
+      "files": {
+        "dist/fabric.min.js": "fabric.min.js"
+      },
+      "integrity": "sha512-q8zJccGVX9SR+l223G1BG842/S6P6QdPeOfDClppG9uw2knkNMKwkpcrAWe186aLUZonu43V+jURhtSuix4OIQ=="
+    },
+    {
+      "name": "qrious",
+      "type": "npm",
+      "package": "qrious",
+      "version": "4.0.2",
+      "license": "GPL-3.0",
+      "files": {
+        "dist/qrious.min.js": "qrious.min.js"
+      },
+      "integrity": "sha512-xWPJIrK1zu5Ypn898fBp8RHkT/9ibquV2Kv24S/JY9VYEhMBMKur1gHVsOiNUh7PHP9uCgejjpZUHUIXXKoU/g=="
+    },
+    {
+      "name": "qrcodejs",
+      "type": "npm",
+      "package": "qrcodejs",
+      "version": "1.0.0",
+      "license": "MIT",
+      "files": {
+        "qrcode.min.js": "qrcode.min.js"
+      },
+      "integrity": "sha512-67rj3mMBhSBepaD57qENnltO+r8rSYlqM7HGThks/BiyDAkc86sLvkKqjkqPS5v13f7tvnt6dbEf3qt7zq+BCg=="
+    },
+    {
+      "name": "emoji-mart",
+      "type": "npm",
+      "package": "emoji-mart",
+      "version": "5.6.0",
+      "license": "MIT",
+      "note": "upstream used unpinned latest",
+      "files": {
+        "dist/browser.js": "browser.js"
+      },
+      "integrity": "sha512-eJp3QRe79pjwa+duv+n7+5YsNhRcMl812EcFVwrnRvYKoNPoQb5qxU8DG6Bgwji0akHdp6D4Ln6tYLG58MFSow=="
+    },
+    {
+      "name": "emoji-mart-data",
+      "type": "npm",
+      "package": "@emoji-mart/data",
+      "version": "1.2.1",
+      "license": "MIT",
+      "note": "emoji-mart fetches this at runtime from jsdelivr by default; we pass it via the data option",
+      "files": {
+        "sets/15/native.json": "native.json"
+      },
+      "integrity": "sha512-no2pQMWiBy6gpBEiqGeU77/bFejDqUTRY7KX+0+iur13op3bqUsXdnwoZs6Xb1zbv0gAj5VvS1PWoUUckSr5Dw=="
+    },
+    {
+      "name": "pdfjs",
+      "type": "npm",
+      "package": "pdfjs-dist",
+      "version": "3.11.174",
+      "license": "Apache-2.0",
+      "note": "pdf.worker.min.js must stay next to pdf.min.js (pdf.js derives workerSrc from its own script URL)",
+      "files": {
+        "build/pdf.min.js": "pdf.min.js",
+        "build/pdf.worker.min.js": "pdf.worker.min.js"
+      },
+      "integrity": "sha512-TdTZPf1trZ8/UFu5Cx/GXB7GZM30LT+wWUNfsi6Bq8ePLnb+woNKtDymI2mxZYBpMbonNFqKmiz684DIfnd8dA=="
+    },
+    {
+      "name": "html2canvas",
+      "type": "npm",
+      "package": "html2canvas",
+      "version": "1.4.1",
+      "license": "MIT",
+      "files": {
+        "dist/html2canvas.min.js": "html2canvas.min.js"
+      },
+      "integrity": "sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA=="
+    },
+    {
+      "name": "jspdf",
+      "type": "npm",
+      "package": "jspdf",
+      "version": "3.0.4",
+      "license": "MIT",
+      "files": {
+        "dist/jspdf.umd.min.js": "jspdf.umd.min.js"
+      },
+      "integrity": "sha512-dc6oQ8y37rRcHn316s4ngz/nOjayLF/FFxBF4V9zamQKRqXxyiH1zagkCdktdWhtoQId5K20xt1lB90XzkB+hQ=="
+    },
+    {
+      "name": "crypto-js",
+      "type": "npm",
+      "package": "crypto-js",
+      "version": "4.2.0",
+      "license": "MIT",
+      "files": {
+        "crypto-js.js": "crypto-js.js"
+      },
+      "integrity": "sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q=="
+    },
+    {
+      "name": "popper",
+      "type": "npm",
+      "package": "@popperjs/core",
+      "version": "2.11.8",
+      "license": "MIT",
+      "files": {
+        "dist/umd/popper.min.js": "popper.min.js"
+      },
+      "integrity": "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A=="
+    },
+    {
+      "name": "tippy",
+      "type": "npm",
+      "package": "tippy.js",
+      "version": "6.3.7",
+      "license": "MIT",
+      "files": {
+        "dist/tippy-bundle.umd.min.js": "tippy-bundle.umd.min.js"
+      },
+      "integrity": "sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ=="
+    },
+    {
+      "name": "ua-parser",
+      "type": "npm",
+      "package": "ua-parser-js",
+      "version": "1.0.41",
+      "license": "MIT",
+      "note": "upstream used unpinned latest (2.x is AGPL-3.0); we pin the last MIT 1.x release",
+      "files": {
+        "dist/ua-parser.min.js": "ua-parser.min.js"
+      },
+      "integrity": "sha512-LbBDqdIC5s8iROCUjMbW1f5dJQTEFB1+KO9ogbvlb3nm9n4YHa5p4KTvFPWvh2Hs8gZMBuiB1/8+pdfe/tDPug=="
+    },
+    {
+      "name": "axios",
+      "type": "npm",
+      "package": "axios",
+      "version": "1.21.1",
+      "license": "MIT",
+      "note": "upstream used unpinned latest",
+      "files": {
+        "dist/axios.min.js": "axios.min.js"
+      },
+      "integrity": "sha512-6eI5Q/Y4u/Um9dDlsRoq5pY2rxnUTv+L4PpLitnbk/i4jb3MxLZ5CsN5Ih3IysbeRYK4pR+P7qfMsOQl9fwwFQ=="
+    },
+    {
+      "name": "scrollreveal",
+      "type": "npm",
+      "package": "scrollreveal",
+      "version": "4.0.0",
+      "license": "GPL-3.0",
+      "files": {
+        "dist/scrollreveal.min.js": "scrollreveal.min.js"
+      },
+      "integrity": "sha512-r9JOsE7dWMRDFoTHjbeREHzZ2vQm2jk0Eqzm4j5Qk7lKl5DHyYfFL8x3nSdHQlFNDn34BSLTHWxsg4Mg4768eQ=="
+    },
+    {
+      "name": "animejs",
+      "type": "npm",
+      "package": "animejs",
+      "version": "3.0.1",
+      "license": "MIT",
+      "files": {
+        "lib/anime.min.js": "anime.min.js"
+      },
+      "integrity": "sha512-7mMoBQScvA7s4zm3EVgnuXXrtOu6TJNAhU+Ajo7HsXYH0NwbuZIcRHMO65a9NyUlmAXz4VPxlK5cENNOQbCi8g=="
+    },
+    {
+      "name": "mediapipe",
+      "type": "npm",
+      "package": "@mediapipe/tasks-vision",
+      "version": "1.2.0",
+      "license": "Apache-2.0",
+      "files": {
+        "vision_bundle.mjs": "vision_bundle.mjs",
+        "wasm/": "wasm/"
+      },
+      "integrity": "sha512-7+dr9GbGyTtcuLh11wE5TOn4dNFRncIT9oAWs72620WX99KW5FfzF6rFJ/ChTgXG9vJ6dCiE9FrEEY4CnwPWKQ=="
+    },
+    {
+      "name": "mediapipe-models",
+      "type": "url",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "url": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite",
+          "to": "selfie_segmenter.tflite",
+          "sha256": "191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b"
+        },
+        {
+          "url": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite",
+          "to": "selfie_multiclass_256x256.tflite",
+          "sha256": "c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0"
+        }
+      ]
+    }
+  ]
+}

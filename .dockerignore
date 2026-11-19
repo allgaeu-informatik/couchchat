@@ -1,0 +1,13 @@
+# Keep the build context small and free of secrets.
+.git
+.github
+.env
+couchchat.env
+coturn/turnserver.conf
+build/
+node_modules/
+*.md
+Caddyfile.example
+docker-compose*.yml
+# Raumhintergruende: nur die WebP-Vorlagen kommen ins Image, die Originale nicht
+branding/backgrounds/_originals

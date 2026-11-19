@@ -1,0 +1,34 @@
+# Produktion: kein Port-Mapping, Caddy erreicht den Container im externen Netzwerk.
+services:
+  couchchat:
+    networks:
+      - caddy
+    # Raumhintergruende: Standardvorlagen sind im Image. Optional zusaetzliche, serverprivate Bilder (z. B. mit
+    # scripts/prepare-backgrounds.sh vorbereitet; Lizenz beim Betreiber, nie im Repo/Image). Sie werden zu den
+    # eingebauten Vorlagen HINZUGEFUEGT (gleicher Dateiname ueberschreibt die eingebaute Vorlage).
+    # volumes:
+    #   - ./backgrounds-extra:/src/backgrounds-extra:ro
+
+  # Optional: eigener TURN-Server (docker compose --profile turn up -d coturn).
+  # Alternativ coturn auf einem separaten Host betreiben (empfohlen, siehe README).
+  coturn:
+    image: coturn/coturn:4.6.3
+    container_name: couchchat-coturn
+    profiles: ["turn"]
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      # Zertifikat fuer TURNS (Pfad in turnserver.conf anpassen), z. B. Caddy-Zertifikate:
+      # - /var/lib/docker/volumes/caddy_data/_data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/turn.couchchat.de:/certs:ro
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  caddy:
+    external: true
+    name: ${CADDY_NETWORK:-caddy}

@@ -1,0 +1,38 @@
+# CouchChat: eigenes Image (aus dem gepinnten offiziellen MiroTalk-Image gebaut, siehe Dockerfile und README).
+# Keine Bind-Mounts von Quelltext: alle Anpassungen stecken im Image. Konfiguration nur ueber couchchat.env.
+name: couchchat
+
+services:
+  couchchat:
+    image: ${COUCHCHAT_IMAGE:?COUCHCHAT_IMAGE in .env setzen}
+    container_name: couchchat
+    hostname: couchchat
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    env_file:
+      - couchchat.env
+    expose:
+      - "3000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3000/robots.txt',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
