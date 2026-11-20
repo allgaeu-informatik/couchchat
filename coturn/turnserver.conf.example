@@ -9,6 +9,10 @@ tls-listening-port=5349
 listening-ip=SERVER.IP.ADRESSE
 external-ip=SERVER.IP.ADRESSE
 relay-ip=SERVER.IP.ADRESSE
+# Hat turn.<domain> auch einen AAAA-Record, MUSS coturn zusaetzlich auf IPv6 lauschen und relayen, sonst laufen
+# Browser mit IPv6 (die den AAAA-Record nehmen) bei STUN und TURN in Timeouts:
+#listening-ip=SERVER:IPV6::ADRESSE
+#relay-ip=SERVER:IPV6::ADRESSE
 min-port=49152
 max-port=49300
 

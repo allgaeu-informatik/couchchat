@@ -354,6 +354,15 @@ export default async function (ctx) {
             'async function snapshotRoom() {\n    if (!buttons.main.showSnapshotRoomBtn) return;\n',
             'client.js: snapshotRoom honours SHOW_SNAPSHOT'
         );
+        // Connectivity panel: Chrome tries STUN/TURN on every local interface (Hyper-V, WSL, VPN adapters), and each failing
+        // interface fires icecandidateerror. Upstream turns the dot red on every error, even after a srflx/relay candidate
+        // was found, so a working STUN/TURN path shows red. Keep green once any candidate of that type arrived.
+        c = ctx.replaceN(
+            c,
+            "        if (url.startsWith('host:')) networkHost.innerText = '🔴';\n        if (url.startsWith('stun:')) networkStun.innerText = '🔴';\n        if (url.startsWith('turn:')) networkTurn.innerText = '🔴';",
+            "        const ccMarkFailed = (el) => {\n            if (el.innerText !== '🟢') el.innerText = '🔴';\n        };\n        if (url.startsWith('host:')) ccMarkFailed(networkHost);\n        if (url.startsWith('stun:')) ccMarkFailed(networkStun);\n        if (url.startsWith('turn:')) ccMarkFailed(networkTurn);",
+            'client.js: connectivity panel keeps green after a successful candidate'
+        );
         for (const flag of ['showRecordStreamBtn', 'showCaptionRoomBtn', 'showSnapshotRoomBtn']) {
             c = ctx.replaceN(
                 c,
