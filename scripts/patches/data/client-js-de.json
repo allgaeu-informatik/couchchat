@@ -142,6 +142,9 @@
         { "old": "label === 'Stop Recording'", "new": "label === 'Aufzeichnung beenden'" },
         { "old": "' (screen)'", "new": "' (Bildschirm)'", "count": 2 },
         { "old": "🔴 &nbsp; Recording Info:", "new": "🔴 &nbsp; Aufzeichnungsinfo:" },
-        { "old": "Please wait to be processed, then will be downloaded to your ${currentDevice} device.", "new": "Bitte warten Sie, bis die Aufzeichnung verarbeitet wurde. Anschließend wird sie auf Ihr Gerät (${currentDevice}) heruntergeladen." }
+        { "old": "Please wait to be processed, then will be downloaded to your ${currentDevice} device.", "new": "Bitte warten Sie, bis die Aufzeichnung verarbeitet wurde. Anschließend wird sie auf Ihr Gerät (${currentDevice}) heruntergeladen." },
+        { "old": "'Mute this participant?'", "new": "'Diese Person stummschalten?'" },
+        { "old": "'Hide this participant?'", "new": "'Video dieser Person ausblenden?'" },
+        { "old": "'Stop screen sharing?'", "new": "'Bildschirmfreigabe beenden?'" }
     ]
 }

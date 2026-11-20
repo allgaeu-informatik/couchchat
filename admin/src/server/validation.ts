@@ -21,7 +21,13 @@ export const passwordInput = z.string({ error: "Passwort fehlt." }).max(128, "Pa
 export const roleSchema = z.enum(["admin", "user"], { error: "Ungültige Rolle." });
 
 export const allowedRoomsSchema = z
-  .array(z.string().trim().regex(ROOM_RE, "Ungültiger Raumname."), { error: "Ungültige Raumliste." })
+  .array(
+    z
+      .string()
+      .trim()
+      .refine((r) => r === "*" || ROOM_RE.test(r), "Ungültiger Raumname."),
+    { error: "Ungültige Raumliste." },
+  )
   .min(1, "Mindestens ein Raum oder * (alle).")
   .max(200)
   .transform((a) => (a.includes("*") ? ["*"] : [...new Set(a)]));

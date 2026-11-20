@@ -330,6 +330,38 @@ export default async function (ctx) {
                 "function handleRoomNotAllowed() {\n    try {\n        window.sessionStorage.removeItem('peer_token');\n    } catch (e) {\n        /* storage not available */\n    }\n    playSound('alert');\n    Swal.fire({\n        allowOutsideClick: false,\n        allowEscapeKey: false,\n        background: swBg,\n        imageUrl: images.forbidden,\n        title: 'Raum nicht erlaubt',\n        text: 'Für diesen Raum fehlt Ihnen die Berechtigung.',\n        confirmButtonText: 'Zur Startseite',\n        showClass: { popup: 'animate__animated animate__fadeInDown' },\n        hideClass: { popup: 'animate__animated animate__fadeOutUp' },\n    }).then(() => {\n        openURL('/');\n    });\n}\n",
             'client.js: handleRoomNotAllowed German + token reset'
         );
+        // upstream bug: emitPeerAction (one target: mute, hide video, stop screen, ...) omits peer_uuid, so the server's
+        // isPeerPresenter check (name + uuid of the sender) fails and the presenter action is dropped silently
+        c = ctx.replaceN(
+            c,
+            "        peer_name: myPeerName,\n        peer_action: peerAction,\n        extras: extras,\n        send_to_all: false,",
+            "        peer_name: myPeerName,\n        peer_uuid: myPeerUUID,\n        peer_action: peerAction,\n        extras: extras,\n        send_to_all: false,",
+            'client.js: emitPeerAction sends peer_uuid'
+        );
+        // GDPR: recording, room snapshot and transcription switched off via env (SHOW_RECORD_BUTTON, SHOW_SNAPSHOT,
+        // SHOW_CAPTION_BUTTON) must stay off for presenters too. Upstream only hides the buttons and lets presenters
+        // trigger them by keyboard shortcut (r / t / k) or voice command, so the flags are enforced in the functions
+        // and the shortcut exemption for presenters is removed.
+        c = ctx.replaceN(
+            c,
+            'function startStreamRecording() {\n',
+            'function startStreamRecording() {\n    if (!buttons.main.showRecordStreamBtn) return;\n',
+            'client.js: startStreamRecording honours SHOW_RECORD_BUTTON'
+        );
+        c = ctx.replaceN(
+            c,
+            'async function snapshotRoom() {\n',
+            'async function snapshotRoom() {\n    if (!buttons.main.showSnapshotRoomBtn) return;\n',
+            'client.js: snapshotRoom honours SHOW_SNAPSHOT'
+        );
+        for (const flag of ['showRecordStreamBtn', 'showCaptionRoomBtn', 'showSnapshotRoomBtn']) {
+            c = ctx.replaceN(
+                c,
+                `if (notPresenter && !buttons.main.${flag}) {`,
+                `if (!buttons.main.${flag}) {`,
+                `client.js: shortcut for ${flag} blocked for presenters too`
+            );
+        }
         pubc.write('js/client.js', c);
     }
 
