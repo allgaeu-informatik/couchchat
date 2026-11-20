@@ -441,6 +441,20 @@ function patchViews(footer) {
     h = sub(h, '<span id="disconnectBannerMsg">Reconnecting to signaling server&hellip;</span>', '<span id="disconnectBannerMsg">Verbindung zum Server wird wiederhergestellt&hellip;</span>', 'client.html disconnect banner text');
     // Profile tab: boolean shown as Ja/Nein
     h = sub(h, '<p id="isPeerPresenter">true</p>', '<p id="isPeerPresenter">Ja</p>', 'client.html profile moderator default');
+    // Appearance tab: theme cards and custom theme colour would override the CouchChat brand theme, so both fields are
+    // hidden (client.js pins the theme, see 40-server). The room background field below stays.
+    h = sub(
+        h,
+        '<div class="settings-field">\n                            <div class="title">\n                                <i class="fa-solid fa-palette"></i>',
+        '<div class="settings-field hidden">\n                            <div class="title">\n                                <i class="fa-solid fa-palette"></i>',
+        'client.html: hide theme picker'
+    );
+    h = sub(
+        h,
+        '<div class="settings-field">\n                            <div class="title">\n                                <i class="fas fa-fill-drip"></i>',
+        '<div class="settings-field hidden">\n                            <div class="title">\n                                <i class="fas fa-fill-drip"></i>',
+        'client.html: hide custom theme colour'
+    );
     write('views/client.html', h);
 
     // --- activeRooms.html

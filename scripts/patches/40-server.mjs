@@ -363,6 +363,14 @@ export default async function (ctx) {
             "        const ccMarkFailed = (el) => {\n            if (el.innerText !== '🟢') el.innerText = '🔴';\n        };\n        if (url.startsWith('host:')) ccMarkFailed(networkHost);\n        if (url.startsWith('stun:')) ccMarkFailed(networkStun);\n        if (url.startsWith('turn:')) ccMarkFailed(networkTurn);",
             'client.js: connectivity panel keeps green after a successful candidate'
         );
+        // Brand theme is fixed: the theme picker is hidden (20-views), and a theme or custom colour stored in the browser
+        // earlier is ignored, so everybody gets the CouchChat theme (index 0 = 'dark', overridden by the brand CSS).
+        c = ctx.replaceN(
+            c,
+            'function setTheme() {\n    if (themeCustom.keep) return setCustomTheme();\n\n    mirotalkTheme.selectedIndex = lsSettings.theme;\n',
+            'function setTheme() {\n    themeCustom.keep = false;\n    lsSettings.theme = 0;\n    lsSettings.theme_custom = false;\n\n    mirotalkTheme.selectedIndex = lsSettings.theme;\n',
+            'client.js: setTheme pinned to the brand theme'
+        );
         for (const flag of ['showRecordStreamBtn', 'showCaptionRoomBtn', 'showSnapshotRoomBtn']) {
             c = ctx.replaceN(
                 c,
