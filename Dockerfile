@@ -7,7 +7,7 @@
 # Build (local): scripts/build-image.sh      Build (CI): .github/workflows/build.yml
 # The default of UPSTREAM_IMAGE must match upstream.env (CI and build-image.sh always pass it explicitly).
 
-ARG UPSTREAM_IMAGE=mirotalk/p2p@sha256:7535807126eb7fbdc4b28f0a36647557a60c30b09d8617d0ed973a2381f563eb
+ARG UPSTREAM_IMAGE=mirotalk/p2p@sha256:c470853ed1bf5fa22389718cb4f15532d985fbc6412fb21527093016495aafed
 
 # ---- vendor: fetch pinned third-party libraries (network only in this stage) -------------------------------
 # Base pinned by digest (tag kept for readability; Dependabot bumps tag and digest together, see .github/dependabot.yml).
